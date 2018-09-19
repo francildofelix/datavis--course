@@ -1,14 +1,96 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="1561.6">
-  <style type="text/css">
-  </style>
+    <meta charset="utf-8">
+    <title>Scatterplot</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
 </head>
+
 <body>
+<div id="chart"></div>
+<script type="text/javascript">
+    // Primeiro definimos o objeto margin
+    let margin = {top: 40, right: 40, bottom: 40, left: 40};
+    
+    // Depois definimos w e h como as dimensões internas
+    // da área do gráfico (área útil)
+    let w = 800 - margin.left - margin.right;
+    let h = 200 - margin.top - margin.bottom;
+
+
+
+
+    
+    function render(dataset) {
+
+        let svg = d3.select("#chart")
+            .append("svg")
+                .attr("width", w + margin.left + margin.right)
+                .attr("height", h + margin.top + margin.bottom)
+            .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        
+        let xScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset, function(d) {return d.Worldwide_Gross_M;})])
+        .range([0,w]);
+        let yScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset, function(d) {return d.Budget_M;})])
+        .range([0,h]);
+
+        let xAxis = d3.axisBottom().scale(xScale);
+        let yAxis = d3.axisLeft().scale(yScale);
+
+
+        // Depois adicione os elementos círculos
+         svg.selectAll("circle")
+        .data(dataset)
+        .enter()
+        .append("circle")
+        .attr("cx", function(d) {return xScale(d.Worldwide_Gross_M);})
+        .attr("cy", function(d) {return yScale(d.Budget_M);})
+        .attr("r", 5);
+
+        // Depois adicione os labels
+
+        svg.selectAll("text")
+        .data(dataset)
+        .enter()
+        .append("text")
+        .attr("x", function(d){return xScale(d.Worldwide_Gross_M);})
+        .attr("y", function(d){return yScale(d.Budget_M);});
+
+        svg.append("g")
+        .attr("transform", "translate(0," + h + ")")
+        .call(xAxis);
+
+        svg.append("g")
+       // .attr("transform", "translate(0," + w + ")")
+        .call(yAxis);
+
+        // Título eixo horizontal
+        svg.append("text")
+        .attr("transform", "translate(" + (w/2) + "," + (h + margin.bottom) + ")")
+        .style("text-anchor", "middle")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "12px")
+        .text("Worldwide Gross");
+
+        // Título eixo vertical
+        svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x",0 - (h / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "12px")
+        .text("Budget");
+    }
+
+    d3.json("data/movies.json").then(function(json){ 
+            render(json);
+        });
+        
+</script>
 </body>
 </html>
